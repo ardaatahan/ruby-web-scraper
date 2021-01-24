@@ -10,15 +10,19 @@ def login driver, username, password
     password_field = driver.find_element(id: "password")
     submit_button = driver.find_element(class: "btn__primary--large")
 
+    username_field.clear
+    password_field.clear
+
     username_field.send_keys(username)
     password_field.send_keys(password)
+
     submit_button.click()
 end
 
 def scrape driver
 
     # Navigate to specific company page after login
-    company_url = "https://www.linkedin.com/company/matic-insurance/"
+    company_url = "https://www.linkedin.com/company/somera/"
     driver.navigate.to(company_url)
 
     # Navigate to employees page
@@ -107,6 +111,8 @@ def main
 
     # Get the employees of the given company
     employees = scrape(driver)
+
+    byebug
 
     driver.quit
 end
