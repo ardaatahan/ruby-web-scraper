@@ -1,19 +1,17 @@
 require "selenium-webdriver"
 require "Nokogiri"
 require "byebug"
+require 'io/console'
 
-def sign_in driver
+def login driver, username, password
 
-    # Navigate to the login page
-    driver.navigate.to("https://www.linkedin.com/login")
-
-    # Find username and password fields and sign in with the given credentials
+    # Find username and password fields and login with the given credentials
     username_field = driver.find_element(id: "username")
     password_field = driver.find_element(id: "password")
     submit_button = driver.find_element(class: "btn__primary--large")
 
-    username_field.send_keys("ardaibis@gmail.com")
-    password_field.send_keys("aRDAbORA2001!")
+    username_field.send_keys(username)
+    password_field.send_keys(password)
     submit_button.click()
 end
 
@@ -34,7 +32,7 @@ def scrape driver
     # Parse the first employee page
     parsed_employee_page = Nokogiri::HTML(driver.page_source)
     
-    # 
+    # Calculate the number of pages for the pagination
     employee_listings = parsed_employee_page.css(".entity-result")
     employee_per_page = employee_listings.size
     total_employee_count = parsed_employee_page.css(".pb2.t-black--light.t-14")
@@ -43,8 +41,11 @@ def scrape driver
     last_page = (total_employee_count.to_f / employee_per_page.to_f).ceil
 
     current_page = 1
+
+    # Initialize empty array for the employees
     employees = Array.new
 
+    # Iterate over every employee page
     while current_page <= last_page
         
         if current_page != 1
@@ -53,6 +54,7 @@ def scrape driver
             employee_listings = parsed_employee_page.css(".entity-result")
         end
 
+        # For each employee listing extract the relevant information and append it to employees
         employee_listings.each do |employee_listing|
             employee = {
                 person: employee_listing.css("a").text.strip.split(/View|&|\+/).first,
@@ -71,11 +73,42 @@ def scrape driver
     return employees
 end
 
-# Configure driver and navigate to LinkedIn
-driver = Selenium::WebDriver.for(:chrome)
+def main
 
-sign_in(driver)
+    # Configure driver
+    options = Selenium::WebDriver::Chrome::Options.new
+    options.add_argument("--headless")
+    driver = Selenium::WebDriver.for :chrome, options: options
 
-employees = scrape(driver)
+    # Navigate to the login page
+    driver.navigate.to("https://www.linkedin.com/login")
 
-driver.quit
+    loop do
+
+        # Try to login to LinkedIn
+        print "Enter LinkedIn mail: "
+        username = gets.chomp
+
+        print "Enter LinkedIn password: "
+        password = STDIN.noecho(&:gets).chomp
+
+        login(driver, username, password)
+
+        puts
+
+        # If successful break else try again
+        if driver.current_url == "https://www.linkedin.com/feed/"
+            puts "Login successful"
+            break
+        end
+
+        puts "Login failed"
+    end
+
+    # Get the employees of the given company
+    employees = scrape(driver)
+
+    driver.quit
+end
+
+main
