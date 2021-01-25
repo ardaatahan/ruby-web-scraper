@@ -18,7 +18,7 @@ def login driver, username, password
     username_field.send_keys(username)
     password_field.send_keys(password)
 
-    submit_button.click()
+    submit_button.click
 end
 
 def scrape driver, company_url
@@ -133,7 +133,7 @@ def main
             
             # If the company url cannot be reached, skip it
             if employees.empty?
-                continue
+                next
             end
             
             puts "Scraping " + company_record.company_url
