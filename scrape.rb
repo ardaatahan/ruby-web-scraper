@@ -87,7 +87,7 @@ def main
 
     # Configure driver
     options = Selenium::WebDriver::Chrome::Options.new
-    # options.add_argument("--headless")
+    options.add_argument("--headless")
     driver = Selenium::WebDriver.for :chrome, options: options
 
     # Navigate to the login page
@@ -123,10 +123,11 @@ def main
     company_records = companies_table.records
 
     people_table = client.table("appzo7rCdkJWP87wK", "People")
-    people_records = people_table.records
 
     # For each company record, if the record contains a company url scrape it
     company_records.each do |company_record|
+
+        # Ignore any potential empty records
         if company_record.company_url
             employees = scrape(driver, company_record.company_url)
             
@@ -135,10 +136,11 @@ def main
                 continue
             end
             
-            puts "Scraping " + company_url
+            puts "Scraping " + company_record.company_url
 
             # Create new records for each employee
             employees.each do |employee|
+
                 employee_record = Airtable::Record.new(
                     Person: employee[:person], Company: employee[:company], 
                     Title: employee[:title], Location: employee[:location],
