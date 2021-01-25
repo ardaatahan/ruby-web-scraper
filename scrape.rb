@@ -1,7 +1,9 @@
 require "selenium-webdriver"
 require "Nokogiri"
 require "byebug"
-require 'io/console'
+require "airtable"
+require "active_support/all"
+require "io/console"
 
 def login driver, username, password
 
@@ -85,7 +87,7 @@ def main
 
     # Configure driver
     options = Selenium::WebDriver::Chrome::Options.new
-    options.add_argument("--headless")
+    # options.add_argument("--headless")
     driver = Selenium::WebDriver.for :chrome, options: options
 
     # Navigate to the login page
@@ -113,10 +115,40 @@ def main
         puts "Login failed"
     end
 
-    company_url = "https://www.linkedin.com/company/copper-inc/"
+    # Connect to airtable
+    client = Airtable::Client.new("keyNTgxHtLJmS0E1c")
 
-    # Get the employees of the given company
-    employees = scrape(driver, company_url)
+    # Get the company urls from the Companies table
+    companies_table = client.table("appzo7rCdkJWP87wK", "Companies")
+    company_records = companies_table.records
+
+    people_table = client.table("appzo7rCdkJWP87wK", "People")
+    people_records = people_table.records
+
+    # For each company record, if the record contains a company url scrape it
+    company_records.each do |company_record|
+        if company_record.company_url
+            employees = scrape(driver, company_record.company_url)
+            
+            # If the company url cannot be reached, skip it
+            if employees.empty?
+                continue
+            end
+            
+            puts "Scraping " + company_url
+
+            # Create new records for each employee
+            employees.each do |employee|
+                employee_record = Airtable::Record.new(
+                    Person: employee[:person], Company: employee[:company], 
+                    Title: employee[:title], Location: employee[:location],
+                    URL: employee[:url]
+                )
+
+                people_table.create(employee_record)
+            end
+        end
+    end
 
     driver.quit
 end
