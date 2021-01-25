@@ -19,11 +19,15 @@ def login driver, username, password
     submit_button.click()
 end
 
-def scrape driver
+def scrape driver, company_url
 
     # Navigate to specific company page after login
-    company_url = "https://www.linkedin.com/company/somera/"
     driver.navigate.to(company_url)
+
+    if driver.current_url == "https://www.linkedin.com/company/unavailable/"
+        puts "Company at URL " + company_url + " does not exist"
+        return Array.new
+    end
 
     # Navigate to employees page
     parsed_company_page = Nokogiri::HTML(driver.page_source)
@@ -109,10 +113,10 @@ def main
         puts "Login failed"
     end
 
-    # Get the employees of the given company
-    employees = scrape(driver)
+    company_url = "https://www.linkedin.com/company/copper-inc/"
 
-    byebug
+    # Get the employees of the given company
+    employees = scrape(driver, company_url)
 
     driver.quit
 end
