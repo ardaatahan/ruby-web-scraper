@@ -141,13 +141,21 @@ def main
             # Create new records for each employee
             employees.each do |employee|
 
-                employee_record = Airtable::Record.new(
-                    Person: employee[:person], Company: employee[:company], 
-                    Title: employee[:title], Location: employee[:location],
-                    URL: employee[:url]
-                )
+                # Ensure a unique record is sent to airtable
+                if people_table.select(formula: "Person = '#{employee[:person]}'").empty? || 
+                    people_table.select(formula: "Company = '#{employee[:company]}'").empty? ||
+                    people_table.select(formula: "Title = '#{employee[:title]}'").empty? ||
+                    people_table.select(formula: "Location = '#{employee[:location]}'").empty? ||
+                    people_table.select(formula: "URL = '#{employee[:url]}'").empty?
 
-                people_table.create(employee_record)
+                    employee_record = Airtable::Record.new(
+                        Person: employee[:person], Company: employee[:company], 
+                        Title: employee[:title], Location: employee[:location],
+                        URL: employee[:url]
+                    )
+
+                    people_table.create(employee_record)
+                end
             end
         end
     end
