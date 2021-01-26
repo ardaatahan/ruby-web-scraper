@@ -17,6 +17,7 @@ GEM
     byebug (11.0.1)
     childprocess (3.0.0)
     concurrent-ruby (1.1.8)
+    dotenv (2.7.6)
     httparty (0.14.0)
       multi_xml (>= 0.5.2)
     i18n (1.8.7)
@@ -41,6 +42,7 @@ DEPENDENCIES
   activesupport
   airtable!
   byebug
+  dotenv
   nokogiri
   selenium-webdriver
 

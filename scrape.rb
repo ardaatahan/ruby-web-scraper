@@ -1,9 +1,9 @@
 require "selenium-webdriver"
 require "Nokogiri"
-require "byebug"
 require "airtable"
 require "active_support/all"
 require "io/console"
+require "dotenv/load"
 
 def login driver, username, password
 
@@ -122,21 +122,22 @@ def main
     companies_table = client.table(ENV["COMPANIES_TABLE_KEY"], "Companies")
     company_records = companies_table.records
 
-    people_table = client.table("PEOPLE_TABLE_KEY", "People")
+    people_table = client.table(ENV["PEOPLE_TABLE_KEY"], "People")
 
     # For each company record, if the record contains a company url scrape it
     company_records.each do |company_record|
 
         # Ignore any potential empty records
         if company_record.company_url
+            
+            puts "Scraping " + company_record.company_url
+
             employees = scrape(driver, company_record.company_url)
             
             # If the company url cannot be reached, skip it
             if employees.empty?
                 next
             end
-            
-            puts "Scraping " + company_record.company_url
 
             # Create new records for each employee
             employees.each do |employee|
