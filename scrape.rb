@@ -116,13 +116,13 @@ def main
     end
 
     # Connect to airtable
-    client = Airtable::Client.new("keyNTgxHtLJmS0E1c")
+    client = Airtable::Client.new(ENV["AIRTABLE_API_KEY"])
 
     # Get the company urls from the Companies table
-    companies_table = client.table("appzo7rCdkJWP87wK", "Companies")
+    companies_table = client.table(ENV["COMPANIES_TABLE_KEY"], "Companies")
     company_records = companies_table.records
 
-    people_table = client.table("appzo7rCdkJWP87wK", "People")
+    people_table = client.table("PEOPLE_TABLE_KEY", "People")
 
     # For each company record, if the record contains a company url scrape it
     company_records.each do |company_record|
